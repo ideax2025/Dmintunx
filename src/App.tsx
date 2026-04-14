@@ -211,7 +211,7 @@ const HomePage = () => {
                 <div className="flex flex-col items-center gap-6 mb-12">
                   <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border border-gold/30 p-1">
                     <img 
-                      src="https://picsum.photos/seed/professional/400/400" 
+                      src="https://media.licdn.com/dms/image/v2/D5603AQFonWYB4Yv9FA/profile-displayphoto-scale_400_400/B56Zj_0qRAHkAk-/0/1756638652164?e=1777507200&v=beta&t=sguRjNCC8sHddZO0hheyXICa0x7clV1lyo0MMQIdkno" 
                       alt="D Min Tun" 
                       className="w-full h-full rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
                       referrerPolicy="no-referrer"
