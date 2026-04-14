@@ -470,6 +470,18 @@ const BlogPostDetail = () => {
   const { id } = useParams();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / totalHeight) * 100;
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -493,40 +505,71 @@ const BlogPostDetail = () => {
   if (loading) return <div className="pt-28 container-custom text-white/20 text-xs uppercase tracking-widest text-center animate-pulse">Loading Post...</div>;
   if (!post) return <div className="pt-28 container-custom text-center">Post not found.</div>;
 
+  // Extract headings for ToC
+  const headings = post.content.match(/^#{1,3} .+/gm)?.map(h => {
+    const level = h.match(/^#+/)?.[0].length || 1;
+    const text = h.replace(/^#+ /, '');
+    const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    return { level, text, id };
+  }) || [];
+
   return (
     <PageTransition>
-      <article className="pt-28 pb-16">
-        <div className="container-custom max-w-5xl">
-          <Link to="/blog" className="inline-flex items-center gap-2 text-white/40 hover:text-gold text-[10px] uppercase tracking-widest mb-8 transition-colors">
-            <ChevronRight size={14} className="rotate-180" /> Back to Journal
-          </Link>
-          
-          <header className="mb-10">
-            <div className="flex items-center gap-6 mb-4">
-              <div className="flex items-center gap-2 text-[10px] text-gold font-bold uppercase tracking-widest">
-                <Tag size={12} /> {post.category}
-              </div>
-              <div className="flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-widest">
-                <Calendar size={12} /> {post.date}
-              </div>
-              <div className="flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-widest">
-                <Clock size={12} /> {post.readTime}
-              </div>
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-8 leading-tight tracking-tight">
-              {post.title}
-            </h1>
-            {post.image && (
-              <div className="aspect-video overflow-hidden border border-white/5 mb-12">
-                <img src={post.image} alt={post.title} className="w-full h-full object-cover opacity-80" referrerPolicy="no-referrer" />
-              </div>
-            )}
-          </header>
+      {/* Reading Progress Bar */}
+      <div className="fixed top-0 left-0 w-full h-1 z-[60] bg-white/5">
+        <motion.div 
+          className="h-full bg-gold"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
 
-          <div className="prose prose-lg prose-invert max-w-none">
-            <ReactMarkdown 
-              rehypePlugins={[rehypeRaw]}
-              components={{
+      <article className="pt-28 pb-16">
+        <div className="container-custom max-w-6xl">
+          <div className="flex flex-col lg:flex-row gap-12">
+            {/* Main Content */}
+            <div className="flex-1 max-w-3xl mx-auto lg:mx-0">
+              <Link to="/blog" className="inline-flex items-center gap-2 text-white/40 hover:text-gold text-[10px] uppercase tracking-widest mb-8 transition-colors">
+                <ChevronRight size={14} className="rotate-180" /> Back to Journal
+              </Link>
+              
+              <header className="mb-10">
+                <div className="flex items-center gap-6 mb-4">
+                  <div className="flex items-center gap-2 text-[10px] text-gold font-bold uppercase tracking-widest">
+                    <Tag size={12} /> {post.category}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-widest">
+                    <Calendar size={12} /> {post.date}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-widest">
+                    <Clock size={12} /> {post.readTime}
+                  </div>
+                </div>
+                <h1 className="text-3xl md:text-5xl font-bold text-white mb-8 leading-tight tracking-tight">
+                  {post.title}
+                </h1>
+                {post.image && (
+                  <div className="aspect-video overflow-hidden border border-white/5 mb-12">
+                    <img src={post.image} alt={post.title} className="w-full h-full object-cover opacity-80" referrerPolicy="no-referrer" />
+                  </div>
+                )}
+              </header>
+
+              <div className="prose prose-lg prose-invert max-w-none">
+                <ReactMarkdown 
+                  rehypePlugins={[rehypeRaw]}
+                  components={{
+                    h1: ({ children }) => {
+                      const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                      return <h1 id={id} className="scroll-mt-24">{children}</h1>;
+                    },
+                    h2: ({ children }) => {
+                      const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                      return <h2 id={id} className="scroll-mt-24">{children}</h2>;
+                    },
+                    h3: ({ children }) => {
+                      const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                      return <h3 id={id} className="scroll-mt-24">{children}</h3>;
+                    },
                 img: ({ node, ...props }) => (
                   <img 
                     {...props} 
@@ -573,9 +616,39 @@ const BlogPostDetail = () => {
             </ReactMarkdown>
           </div>
         </div>
-      </article>
-    </PageTransition>
-  );
+
+        {/* Sidebar ToC */}
+        {headings.length > 0 && (
+          <aside className="hidden lg:block w-64 shrink-0">
+            <div className="sticky top-32">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-6 font-bold">Table of Contents</div>
+              <nav className="space-y-4">
+                {headings.map((h, i) => (
+                  <a 
+                    key={i}
+                    href={`#${h.id}`}
+                    className={cn(
+                      "block text-[11px] leading-relaxed transition-all duration-300 hover:text-gold",
+                      h.level === 1 ? "text-white/80 font-medium" : 
+                      h.level === 2 ? "text-white/50 pl-4" : "text-white/30 pl-8"
+                    )}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    {h.text}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </aside>
+        )}
+      </div>
+    </div>
+  </article>
+</PageTransition>
+);
 };
 
 export default function App() {
