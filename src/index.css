@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  --color-gold: #C5A059;
+  --color-gold-dark: #A68045;
+  --color-gold-light: #D9BC8C;
+}
+
+@layer base {
+  body {
+    @apply bg-black text-white font-sans antialiased selection:bg-gold selection:text-black;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply max-w-5xl mx-auto px-6;
+  }
+  
+  .nav-link {
+    @apply text-[10px] uppercase tracking-[0.2em] text-white/60 hover:text-gold transition-colors duration-300;
+  }
+  
+  .btn-primary {
+    @apply px-5 py-1.5 border border-gold text-gold text-[9px] uppercase tracking-[0.3em] font-bold hover:bg-gold hover:text-black transition-all duration-300;
+  }
+
+  /* Markdown Styles for Blog */
+  .prose {
+    @apply text-white/80 leading-relaxed text-base;
+  }
+  .prose h1, .prose h2, .prose h3 {
+    @apply text-white font-bold mt-10 mb-5;
+  }
+  .prose h1 { @apply text-3xl; }
+  .prose h2 { @apply text-2xl; }
+  .prose h3 { @apply text-xl; }
+  .prose p { @apply mb-4; }
+  .prose ul { @apply list-disc list-inside mb-4 space-y-2; }
+  .prose ol { @apply list-decimal list-inside mb-4 space-y-2; }
+  .prose img { @apply rounded-lg my-8 border border-white/10; }
+  .prose blockquote { @apply border-l-2 border-gold pl-4 italic text-white/60 my-6; }
+  .prose code { @apply bg-white/10 px-1.5 py-0.5 rounded text-xs text-gold; }
+}
